@@ -443,6 +443,54 @@ let HIST_DAY   = '';   // 종목이력 날짜 필터 — 일
     ['현대차','005380','2026-06-05',13,252000,-0.3,700000,0.18],
     ['NAVER','035420','2026-06-05',14,216000,-0.8,800000,0.17],
     ['LG에너지솔루션','373220','2026-06-05',15,316000,1.1,500000,0.16],
+
+    ['삼성전자','005930','2026-05-30',1,69000,1.5,27000000,1.86],
+    ['SK하이닉스','000660','2026-05-30',2,185000,2.8,8500000,1.57],
+    ['현대차','005380','2026-05-30',3,255000,1.2,5800000,1.48],
+    ['기아','000270','2026-05-30',4,105000,0.8,12500000,1.31],
+    ['NAVER','035420','2026-05-30',5,218000,0.5,5600000,1.22],
+    ['에코프로비엠','247540','2026-05-30',6,142000,4.5,8000000,1.14],
+    ['삼성바이오로직스','207940','2026-05-30',7,895000,1.1,1100000,0.98],
+    ['LG에너지솔루션','373220','2026-05-30',8,320000,2.2,2800000,0.90],
+    ['포스코홀딩스','005490','2026-05-30',9,385000,-0.8,2200000,0.85],
+    ['한미반도체','042700','2026-05-30',10,118000,3.5,6800000,0.80],
+    ['셀트리온','068270','2026-05-30',11,195000,0.3,3800000,0.74],
+    ['KB금융','105560','2026-05-30',12,89000,1.4,8100000,0.72],
+    ['HD현대중공업','329180','2026-05-30',13,338000,-1.2,2000000,0.68],
+    ['카카오','035720','2026-05-30',14,59000,-0.4,10800000,0.64],
+    ['두산에너빌리티','034020','2026-05-30',15,40500,2.8,14500000,0.59],
+
+    ['삼성전자','005930','2026-05-29',1,67900,-1.6,29000000,1.97],
+    ['SK하이닉스','000660','2026-05-29',2,180000,-2.5,9100000,1.64],
+    ['에코프로비엠','247540','2026-05-29',3,136000,-5.2,11000000,1.50],
+    ['현대차','005380','2026-05-29',4,252000,-0.5,5500000,1.39],
+    ['기아','000270','2026-05-29',5,104000,-1.0,12000000,1.25],
+    ['삼성바이오로직스','207940','2026-05-29',6,885000,-1.0,1300000,1.15],
+    ['한미반도체','042700','2026-05-29',7,114000,-3.0,9200000,1.05],
+    ['NAVER','035420','2026-05-29',8,217000,0.1,4500000,0.98],
+    ['LG에너지솔루션','373220','2026-05-29',9,313000,-1.4,2900000,0.91],
+    ['포스코홀딩스','005490','2026-05-29',10,388000,0.5,2100000,0.82],
+    ['카카오','035720','2026-05-29',11,59500,0.4,12500000,0.74],
+    ['두산에너빌리티','034020','2026-05-29',12,39400,-1.0,17500000,0.69],
+    ['셀트리온','068270','2026-05-29',13,194000,-0.8,3300000,0.64],
+    ['KB금융','105560','2026-05-29',14,87800,-1.1,6900000,0.61],
+    ['HD현대중공업','329180','2026-05-29',15,342000,1.2,1700000,0.58],
+
+    ['삼성전자','005930','2026-05-28',1,69000,2.2,25000000,1.73],
+    ['SK하이닉스','000660','2026-05-28',2,184500,1.4,8200000,1.51],
+    ['에코프로비엠','247540','2026-05-28',3,143500,6.8,9800000,1.41],
+    ['현대차','005380','2026-05-28',4,253000,0.9,5200000,1.31],
+    ['삼성바이오로직스','207940','2026-05-28',5,894000,2.1,1200000,1.07],
+    ['기아','000270','2026-05-28',6,105000,1.0,9800000,1.03],
+    ['한미반도체','042700','2026-05-28',7,117500,5.2,8300000,0.98],
+    ['NAVER','035420','2026-05-28',8,216000,-0.5,4200000,0.91],
+    ['LG에너지솔루션','373220','2026-05-28',9,318000,1.5,2600000,0.83],
+    ['포스코홀딩스','005490','2026-05-28',10,386000,-0.2,1900000,0.73],
+    ['두산에너빌리티','034020','2026-05-28',11,39800,1.9,17000000,0.68],
+    ['셀트리온','068270','2026-05-28',12,196000,1.4,3100000,0.61],
+    ['KB금융','105560','2026-05-28',13,89000,1.6,6400000,0.57],
+    ['카카오','035720','2026-05-28',14,59200,-0.8,8900000,0.53],
+    ['HD현대중공업','329180','2026-05-28',15,338000,-0.6,1500000,0.51],
   ];
   window.DEMO_VOLUMES = raw.map(([name,code,date,rank,close,chg,vol,amtT])=>({
     name,code,date,rank,close,chg,vol,amt:T(amtT)
@@ -553,8 +601,9 @@ function setPeriod(v){
   HIST_YEAR = ''; HIST_MONTH = ''; HIST_DAY = '';
   renderCurrent();
 }
+function pickerPeriod(){ return (curTab==='daily'||curTab==='change'||curTab==='band'||curTab==='entry') ? 0 : PERIOD; }
 function dateTripleSelHtml(){
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(pickerPeriod());
   const sy = SEL_DATE ? SEL_DATE.slice(0,4) : '';
   const sm = SEL_DATE ? SEL_DATE.slice(5,7) : '';
   const sd = SEL_DATE ? SEL_DATE.slice(8,10) : '';
@@ -572,7 +621,7 @@ function dateTripleSelHtml(){
     + '</select>';
 }
 function setDateY(y){
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(pickerPeriod());
   const ms = [...new Set(dates.filter(d=>d.startsWith(y)).map(d=>d.slice(5,7)))].sort((a,b)=>b.localeCompare(a));
   const m = ms[0]||'';
   const ds = dates.filter(d=>d.startsWith(y+'-'+m)).map(d=>d.slice(8,10)).sort((a,b)=>b.localeCompare(a));
@@ -581,7 +630,7 @@ function setDateY(y){
 }
 function setDateM(m){
   const y = SEL_DATE ? SEL_DATE.slice(0,4) : '';
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(pickerPeriod());
   const ds = dates.filter(d=>d.startsWith(y+'-'+m)).map(d=>d.slice(8,10)).sort((a,b)=>b.localeCompare(a));
   SEL_DATE = y&&m&&ds[0] ? y+'-'+m+'-'+ds[0] : '';
   renderCurrent();
@@ -620,7 +669,7 @@ function setHistDateD(d){ HIST_DAY=d; renderHistory(); }
 function renderDaily(){
   const panel = document.getElementById('panel-daily');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(0);
   if(!SEL_DATE || !dates.includes(SEL_DATE)) SEL_DATE = dates[0]||'';
   const rows = VOLUMES.filter(r=>r.date===SEL_DATE).sort((a,b)=>(a.rank??999)-(b.rank??999));
   const totalAmt = rows.reduce((s,r)=>s+(r.amt||0),0);
@@ -637,13 +686,12 @@ function renderDaily(){
       {cls:'kpi-'+(avgChg>=0?'up':'down'),num:fmtPct(avgChg),lbl:'평균등락'},
     ])
   + '<div class="toolbar"><div class="f-row">'
-  +   '<span class="f-label">기간</span>'+periodSelHtml('dpPeriod','setPeriod(this.value)')
   +   '<span class="f-label">날짜</span>'+dateTripleSelHtml()
   + '</div></div>'
   + '<div class="sc"><div class="sc-title">거래대금 상위 <span class="sub">'+esc(SEL_DATE)+'</span></div>'
   +   '<div class="bars">'+rows.map(r=>{
         const w=Math.max((r.amt||0)/maxAmt*100,1);
-        return '<div class="bar-row">'
+        return '<div class="bar-row" style="cursor:pointer" onclick="goHistory(\''+esc(r.name)+'\')">'
           +'<div class="bar-lbl" title="'+esc(r.name)+'">'+esc(r.name)+'</div>'
           +'<div class="bar-track"><div class="bar-fill" style="width:'+w+'%;background:'+chgColor(r.chg||0)+'"></div></div>'
           +'<div class="bar-val">'+fmtAmt(r.amt)+'</div>'
@@ -655,9 +703,11 @@ function renderDaily(){
   +     '<thead><tr><th class="l" style="padding-left:6px">순위</th><th class="l">종목</th><th>종가</th><th>등락률</th><th>거래량</th><th>거래대금</th></tr></thead>'
   +     '<tbody>'
   +       rows.map(function(r){
+            const consec=consecAppear(r.name,SEL_DATE);
+            const cBdg=consec>=2?'<span class="bdg" style="background:var(--amber50);color:var(--amber);font-size:11px;margin-left:4px">'+consec+'일↑</span>':'';
             return '<tr>'
               +'<td class="l t-rank" style="padding-left:6px">'+fmtRank(r.rank)+'</td>'
-              +'<td class="l t-name">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span></td>'
+              +'<td class="l t-name" style="cursor:pointer" onclick="goHistory(\''+esc(r.name)+'\')">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span>'+cBdg+'</td>'
               +'<td>'+fmtNum(r.close)+'</td>'
               +'<td class="'+chgCls(r.chg)+' t-chg">'+fmtPct(r.chg)+'</td>'
               +'<td>'+fmtNum(r.vol)+'</td>'
@@ -668,6 +718,21 @@ function renderDaily(){
   + '</div>';
 }
 function setSelDate(d){ SEL_DATE=d; renderCurrent(); }
+function goHistory(name){
+  HIST_STOCK=name; HIST_YEAR=''; HIST_MONTH=''; HIST_DAY='';
+  const btn=document.querySelector('.tab-btn[data-tab="history"]');
+  if(btn) btn.click();
+}
+function consecAppear(name, fromDate){
+  const allDates=distinctDatesDesc(VOLUMES);
+  const idx=allDates.indexOf(fromDate);
+  if(idx<0) return 0;
+  let count=0;
+  for(let i=idx;i<allDates.length;i++){
+    if(VOLUMES.some(r=>r.date===allDates[i]&&r.name===name)) count++; else break;
+  }
+  return count;
+}
 
 // ════════════════════════════════════════════════
 // TAB 2 — 순위변동
@@ -675,7 +740,7 @@ function setSelDate(d){ SEL_DATE=d; renderCurrent(); }
 function renderChange(){
   const panel = document.getElementById('panel-change');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(0);
   if(!SEL_DATE || !dates.includes(SEL_DATE)) SEL_DATE = dates[0]||'';
   const allDates = distinctDatesDesc(VOLUMES);
   const idx = allDates.indexOf(SEL_DATE);
@@ -689,7 +754,8 @@ function renderChange(){
     const cr = validRank(r.rank)?r.rank:null;
     const pr = prev?.rank!=null&&validRank(prev.rank)?prev.rank:null;
     const delta = (cr!=null&&pr!=null) ? pr-cr : null;
-    return {...r, rank:cr, prevRank:pr, delta};
+    const amtDelta = (!safeN(r.amt)&&prev?.amt!=null&&!safeN(prev.amt)&&prev.amt>0) ? Math.round((r.amt-prev.amt)/prev.amt*100) : null;
+    return {...r, rank:cr, prevRank:pr, delta, amtDelta};
   });
   const newEntries = rows.filter(r=>r.delta===null).length;
   const improved = rows.filter(r=>r.delta!==null&&r.delta>0).length;
@@ -702,12 +768,11 @@ function renderChange(){
       {cls:'kpi-tot',num:rows.length,lbl:'총종목'},
     ])
   + '<div class="toolbar"><div class="f-row">'
-  +   '<span class="f-label">기간</span>'+periodSelHtml('chPeriod','setPeriod(this.value)')
   +   '<span class="f-label">기준일</span>'+dateTripleSelHtml()
   + '</div></div>'
   + '<div class="sc"><div class="sc-title">순위 변동 <span class="sub">'+esc(SEL_DATE)+'</span></div>'
   +   '<div class="tbl-wrap"><table>'
-  +     '<thead><tr><th class="l" style="padding-left:6px">순위</th><th class="l">종목</th><th>등락률</th><th>거래대금</th><th>전일순위</th><th>변동</th></tr></thead>'
+  +     '<thead><tr><th class="l" style="padding-left:6px">순위</th><th class="l">종목</th><th>등락률</th><th>거래대금</th><th>대금변동</th><th>전일순위</th><th>변동</th></tr></thead>'
   +     '<tbody>'
   +       rows.map(r=>{
             const d = r.delta;
@@ -716,11 +781,16 @@ function renderChange(){
             else if(d===0) deltaBadge = '<span class="delta flat">유지</span>';
             else if(d>0) deltaBadge = '<span class="delta up">+'+d+'▲</span>';
             else deltaBadge = '<span class="delta down">'+d+'▼</span>';
+            const consec=consecAppear(r.name,SEL_DATE);
+            const cBdg=consec>=2?'<span class="bdg" style="background:var(--amber50);color:var(--amber);font-size:11px;margin-left:4px">'+consec+'일↑</span>':'';
+            const adCls=r.amtDelta==null?'':(r.amtDelta>=0?'t-up':'t-down');
+            const adTxt=r.amtDelta==null?'-':((r.amtDelta>0?'+':'')+r.amtDelta+'%');
             return '<tr>'
               +'<td class="l t-rank" style="padding-left:6px">'+fmtRank(r.rank)+'</td>'
-              +'<td class="l t-name">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span></td>'
+              +'<td class="l t-name" style="cursor:pointer" onclick="goHistory(\''+esc(r.name)+'\')">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span>'+cBdg+'</td>'
               +'<td class="'+chgCls(r.chg)+' t-chg">'+fmtPct(r.chg)+'</td>'
               +'<td class="t-amt">'+fmtAmt(r.amt)+'</td>'
+              +'<td class="'+adCls+'" style="font-size:12.5px;font-weight:700">'+adTxt+'</td>'
               +'<td>'+fmtRank(r.prevRank)+'</td>'
               +'<td>'+deltaBadge+'</td>'
             +'</tr>';
@@ -773,7 +843,8 @@ function renderEntry(){
   const panel = document.getElementById('panel-entry');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
   const dates = getPeriodDates(PERIOD);
-  if(!SEL_DATE || !dates.includes(SEL_DATE)) SEL_DATE = dates[0]||'';
+  const allEntryDates = getPeriodDates(0);
+  if(!SEL_DATE || !allEntryDates.includes(SEL_DATE)) SEL_DATE = allEntryDates[0]||'';
   const {prevDate, rows:entrants} = calcEntrants(SEL_DATE, ENTRANT_TOP_N);
   const summary = calcPeriodSummary(PERIOD, ENTRANT_TOP_N);
   const totalEntN = summary.reduce((s,d)=>s+d.entN,0);
@@ -806,7 +877,7 @@ function renderEntry(){
     +   '<tbody>'
     +   entrants.map(function(r){
           return '<tr>'
-            +'<td class="l t-name" style="padding-left:6px">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span></td>'
+            +'<td class="l t-name" style="padding-left:6px;cursor:pointer" onclick="goHistory(\''+esc(r.name)+'\')">'+esc(r.name)+'<span class="c">'+esc(r.code)+'</span></td>'
             +'<td style="font-weight:800;color:var(--sky600)">'+fmtRank(r.rank)+'</td>'
             +'<td class="'+chgCls(r.chg)+' t-chg">'+fmtPct(r.chg)+'</td>'
             +'<td class="t-amt">'+fmtAmt(r.amt)+'</td>'
@@ -853,7 +924,7 @@ const BANDS = [
 function renderBand(){
   const panel = document.getElementById('panel-band');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
-  const dates = getPeriodDates(PERIOD);
+  const dates = getPeriodDates(0);
   if(!SEL_DATE || !dates.includes(SEL_DATE)) SEL_DATE = dates[0]||'';
   const rows = VOLUMES.filter(r=>r.date===SEL_DATE && validRank(r.rank)).sort((a,b)=>a.rank-b.rank);
   const maxAmt = Math.max(...rows.map(r=>r.amt||0), 1);
@@ -861,10 +932,19 @@ function renderBand(){
     const inBand = rows.filter(r=>r.rank>=band.min&&r.rank<=band.max);
     return {...band, stocks:inBand};
   });
+  const totalAmt = rows.reduce((s,r)=>s+(r.amt||0),0);
+  const bandUpN = rows.filter(r=>(r.chg??0)>0).length;
+  const bandDownN = rows.filter(r=>(r.chg??0)<0).length;
+  const top10Amt = rows.filter(r=>r.rank<=10).reduce((s,r)=>s+(r.amt||0),0);
 
   panel.innerHTML = ''
+  + kpiRow([
+      {cls:'kpi-amt',num:fmtAmt(totalAmt),lbl:'총 거래대금'},
+      {cls:'kpi-up',num:bandUpN,lbl:'상승'},
+      {cls:'kpi-down',num:bandDownN,lbl:'하락'},
+      {cls:'kpi-teal',num:fmtAmt(top10Amt),lbl:'상위10위 대금'},
+    ])
   + '<div class="toolbar"><div class="f-row">'
-  +   '<span class="f-label">기간</span>'+periodSelHtml('bandPeriod','setPeriod(this.value)')
   +   '<span class="f-label">날짜</span>'+dateTripleSelHtml()
   + '</div></div>'
   + '<div class="band-grid">'
@@ -875,10 +955,11 @@ function renderBand(){
         +'<div class="bars">'
         + band.stocks.map(function(s){
             const w=Math.max((s.amt||0)/maxAmt*100,2);
-            return '<div class="bar-row" style="grid-template-columns:90px 1fr 44px">'
+            return '<div class="bar-row" style="grid-template-columns:90px 1fr 40px 52px;cursor:pointer" onclick="goHistory(\''+esc(s.name)+'\')">'
               +'<div class="bar-lbl" title="'+esc(s.name)+'">'+esc(s.name)+'</div>'
               +'<div class="bar-track"><div class="bar-fill" style="width:'+w+'%;background:'+band.col+'"></div></div>'
               +'<div class="bar-val">'+fmtRank(s.rank)+'</div>'
+              +'<div style="font-size:11.5px;font-weight:700;text-align:right" class="'+chgCls(s.chg)+'">'+fmtPct(s.chg)+'</div>'
             +'</div>';
           }).join('')
         +'</div>'
@@ -906,19 +987,24 @@ function renderHistory(){
   const avgRank = rankVals.length ? (rankVals.reduce((s,v)=>s+v,0)/rankVals.length).toFixed(1) : '-';
   const bestRank = rankVals.length ? Math.min(...rankVals) : '-';
   const worstRank = rankVals.length ? Math.max(...rankVals) : '-';
+  const totalDays = getPeriodDates(PERIOD).length;
+  const appearRate = totalDays>0 ? Math.round(histRows.length/totalDays*100) : 0;
+  const amtVals = histRows.map(r=>r.amt).filter(a=>!safeN(a));
+  const avgAmt = amtVals.length ? amtVals.reduce((s,v)=>s+v,0)/amtVals.length : null;
   const stockOpts = allStocks.map(n=>'<option value="'+esc(n)+'"'+(HIST_STOCK===n?' selected':'')+'>'+esc(n)+'</option>').join('');
 
   panel.innerHTML = ''
   + kpiRow([
       {cls:'kpi-tot',num:histRows.length,lbl:'출현일수'},
+      {cls:'kpi-amber',num:appearRate+'%',lbl:'출현율'},
       {cls:'kpi-teal',num:avgRank,lbl:'평균순위'},
       {cls:'kpi-up',num:bestRank!=='-'?bestRank+'위':'-',lbl:'최고순위'},
       {cls:'kpi-coral',num:worstRank!=='-'?worstRank+'위':'-',lbl:'최저순위'},
+      {cls:'kpi-amt',num:fmtAmt(avgAmt),lbl:'평균거래대금'},
     ])
   + '<div class="toolbar"><div class="f-row">'
   +   '<span class="f-label">기간</span>'+periodSelHtml('hisPeriod','setPeriod(this.value)')
   +   '<span class="f-label">종목</span><select class="sel" onchange="setHistStock(this.value)">'+stockOpts+'</select>'
-  +   '<span class="f-label">날짜</span>'+histDateTripleSelHtml(allHistRows)
   + '</div></div>'
   + (histRows.length===0
     ? '<div class="empty"><div class="ico">📭</div><div class="msg">해당 기간 데이터 없음</div></div>'
@@ -977,8 +1063,9 @@ function rankTrendSvg(rows){
   const dots = rows.map((r,i)=>{
     if(r.rank==null) return '';
     const cx=x(i), cy=y(r.rank);
-    return '<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="#378ADD" stroke="#fff" stroke-width="1.5"/>'
-      +'<text x="'+cx+'" y="'+(cy-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="#185FA5">'+r.rank+'</text>';
+    const dotFill=safeN(r.chg)?'#378ADD':(r.chg>0?'#D8302F':(r.chg<0?'#2563C9':'#7E8CA0'));
+    return '<circle cx="'+cx+'" cy="'+cy+'" r="4.5" fill="'+dotFill+'" stroke="#fff" stroke-width="1.5"/>'
+      +'<text x="'+cx+'" y="'+(cy-9)+'" text-anchor="middle" font-size="10" font-weight="700" fill="'+dotFill+'">'+r.rank+'</text>';
   }).join('');
   const labels = dates.map((d,i)=>'<text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#6B7E99">'+fmtDateShort(d)+'</text>').join('');
   return '<svg class="trend-svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">'
