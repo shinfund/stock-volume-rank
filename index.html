@@ -46,7 +46,7 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:15px;line-heigh
 
 /* ── TAB NAV ── */
 .top-nav{background:#fff;border-bottom:1.5px solid var(--border);display:flex;padding:0 4px;max-width:1100px;margin:0 auto;}
-.tab-btn{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--txt2);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;padding:13px 4px;-webkit-tap-highlight-color:transparent;transition:color .15s;position:relative;white-space:nowrap;}
+.tab-btn{flex:1;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:var(--txt2);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;padding:13px 4px;-webkit-tap-highlight-color:transparent;transition:color .15s;position:relative;white-space:nowrap;}
 .tab-btn.on{color:var(--sky600);}
 .tab-btn.on::after{content:'';position:absolute;bottom:0;left:8%;right:8%;height:2.5px;background:var(--sky);border-radius:2px 2px 0 0;}
 .tab-btn:hover:not(.on){color:var(--txt);}
@@ -213,7 +213,7 @@ tbody tr:hover{background:var(--sky50);}
 /* 모바일 ≤600px */
 @media(max-width:600px){
   .main{padding:10px 10px 14px;}
-  .tab-btn{font-size:13px;}
+  .tab-btn{font-size:14px;}
   table{font-size:13px;}
   thead th,tbody td{padding:8px 5px;}
   .t-name .c{display:none;}
@@ -236,7 +236,7 @@ tbody tr:hover{background:var(--sky50);}
   .kpi-card{min-width:56px;padding:8px 5px;}
   .kpi-card .num-n{font-size:14px;}
   .kpi-card .lbl{font-size:11px;margin-top:2px;}
-  .tab-btn{font-size:12px;padding:10px 2px;}
+  .tab-btn{font-size:13px;padding:10px 2px;}
   .sc{padding:11px;}
   table{font-size:12.5px;}
   thead th,tbody td{padding:7px 4px;}
@@ -330,7 +330,7 @@ tbody tr:hover{background:var(--sky50);}
       </div>
     </div>
     <div class="top-nav" id="nav" role="tablist">
-      <button class="tab-btn on" data-tab="top10" role="tab">TOP 10</button>
+      <button class="tab-btn on" data-tab="top10" role="tab">순위별</button>
       <button class="tab-btn" data-tab="daily" role="tab">일별</button>
       <button class="tab-btn" data-tab="change" role="tab">순위변동</button>
       <button class="tab-btn" data-tab="entry" role="tab">상위진입</button>
@@ -367,13 +367,15 @@ let CFG = (()=>{
 let VOLUMES = [];
 let IS_DEMO = false;
 let curTab = 'top10';
-let PERIOD = 20;       // 기간 (0=전체)
-let SEL_DATE = '';     // 일별/순위변동 탭 선택 날짜
-let ENTRANT_TOP_N = 10; // 상위권진입 기준 순위
-let HIST_STOCK = '';   // 종목이력 선택 종목
-let HIST_YEAR  = '';   // 종목이력 날짜 필터 — 년
-let HIST_MONTH = '';   // 종목이력 날짜 필터 — 월
-let HIST_DAY   = '';   // 종목이력 날짜 필터 — 일
+let PERIOD = 20;         // 일별·순위변동 탭 기간
+let ENTRY_PERIOD = 5;    // 상위진입 탭 기간
+let HIST_PERIOD = 20;    // 종목이력 탭 기간
+let SEL_DATE = '';       // 일별/순위변동 탭 선택 날짜
+let ENTRANT_TOP_N = 10;  // 상위권진입 기준 순위
+let HIST_STOCK = '';     // 종목이력 선택 종목
+let HIST_YEAR  = '';     // 종목이력 날짜 필터 — 년
+let HIST_MONTH = '';     // 종목이력 날짜 필터 — 월
+let HIST_DAY   = '';     // 종목이력 날짜 필터 — 일
 
 // ════════════════════════════════════════════════
 // 데모 데이터
@@ -654,11 +656,26 @@ function periodSelHtml(id, onChange){
     + PERIOD_OPTS.map(o=>'<option value="'+o.v+'"'+(PERIOD===o.v?' selected':'')+'>'+o.l+'</option>').join('')
     + '</select>';
 }
+function periodSelHtml(id, onChange, curVal){
+  const v = (curVal !== undefined) ? curVal : PERIOD;
+  return '<select class="sel period-sel" id="'+id+'" onchange="'+onChange+'" aria-label="기간 선택">'
+    + PERIOD_OPTS.map(o=>'<option value="'+o.v+'"'+(v===o.v?' selected':'')+'>'+o.l+'</option>').join('')
+    + '</select>';
+}
 function setPeriod(v){
   PERIOD = Number(v);
   SEL_DATE = '';
-  HIST_YEAR = ''; HIST_MONTH = ''; HIST_DAY = '';
   renderCurrent();
+}
+function setEntryPeriod(v){
+  ENTRY_PERIOD = Number(v);
+  SEL_DATE = '';
+  renderEntry();
+}
+function setHistPeriod(v){
+  HIST_PERIOD = Number(v);
+  HIST_YEAR = ''; HIST_MONTH = ''; HIST_DAY = '';
+  renderHistory();
 }
 function pickerPeriod(){ return (curTab==='daily'||curTab==='change') ? 0 : PERIOD; }
 function dateTripleSelHtml(){
@@ -869,30 +886,26 @@ function calcEntrants(date, topN){
   const allDates = distinctDatesDesc(VOLUMES);
   const idx = allDates.indexOf(date);
   const prevDate = (idx>=0 && idx<allDates.length-1) ? allDates[idx+1] : null;
-  // 당일 top N (유효 순위 기준)
-  const currTop = VOLUMES.filter(r=>r.date===date && validRank(r.rank) && r.rank<=topN)
+  // 당일 top N (유효 순위 기준), topN=0이면 전체
+  const currTop = VOLUMES.filter(r=>r.date===date && validRank(r.rank) && (!topN || r.rank<=topN))
     .sort((a,b)=>a.rank-b.rank);
-  // 전일 전체 데이터 map (key → rank)
   const prevMap = {};
   if(prevDate) VOLUMES.filter(r=>r.date===prevDate).forEach(r=>{ prevMap[r.code||r.name]=r.rank; });
   return { prevDate, rows: currTop.map(r=>{
     const key = r.code||r.name;
     const prevRank = prevDate ? (prevMap[key]??null) : null;
-    const isNew = !prevDate || prevRank==null || !validRank(prevRank) || prevRank>topN;
+    const isNew = !prevDate || prevRank==null || !validRank(prevRank) || (topN && prevRank>topN);
     return {...r, prevDate, prevRank, isNew};
   }).filter(r=>r.isNew)};
 }
 
-// 기간 요약: 날짜별 진입/이탈 건수
 function calcPeriodSummary(period, topN){
-  const allDates = distinctDatesDesc(VOLUMES);
   return getPeriodDates(period).map(date=>{
     const {rows:ent, prevDate} = calcEntrants(date, topN);
-    // 이탈: 전일 top N이었으나 오늘 top N 아닌 종목
     let exitN = 0;
     if(prevDate){
-      const currKeys = new Set(VOLUMES.filter(r=>r.date===date && validRank(r.rank) && r.rank<=topN).map(r=>r.code||r.name));
-      exitN = VOLUMES.filter(r=>r.date===prevDate && validRank(r.rank) && r.rank<=topN && !currKeys.has(r.code||r.name)).length;
+      const currKeys = new Set(VOLUMES.filter(r=>r.date===date && validRank(r.rank) && (!topN || r.rank<=topN)).map(r=>r.code||r.name));
+      exitN = VOLUMES.filter(r=>r.date===prevDate && validRank(r.rank) && (!topN || r.rank<=topN) && !currKeys.has(r.code||r.name)).length;
     }
     return {date, entN:ent.length, exitN};
   });
@@ -901,13 +914,13 @@ function calcPeriodSummary(period, topN){
 function renderEntry(){
   const panel = document.getElementById('panel-entry');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
-  const dates = getPeriodDates(PERIOD);
-  const allEntryDates = getPeriodDates(0);
-  if(!SEL_DATE || !allEntryDates.includes(SEL_DATE)) SEL_DATE = allEntryDates[0]||'';
+  const dates = getPeriodDates(ENTRY_PERIOD);
+  if(!SEL_DATE || !dates.includes(SEL_DATE)) SEL_DATE = dates[0]||'';
   const {prevDate, rows:entrants} = calcEntrants(SEL_DATE, ENTRANT_TOP_N);
-  const summary = calcPeriodSummary(PERIOD, ENTRANT_TOP_N);
+  const summary = calcPeriodSummary(ENTRY_PERIOD, ENTRANT_TOP_N);
   const totalEntN = summary.reduce((s,d)=>s+d.entN,0);
-  const topNOpts = [5,10,20,30].map(n=>'<option value="'+n+'"'+(ENTRANT_TOP_N===n?' selected':'')+'>상위 '+n+'위</option>').join('');
+  const topNOpts = [{v:10,l:'10위'},{v:20,l:'20위'},{v:30,l:'30위'},{v:0,l:'전체'}]
+    .map(o=>'<option value="'+o.v+'"'+(ENTRANT_TOP_N===o.v?' selected':'')+'>'+o.l+'</option>').join('');
   const maxBarN = Math.max(...summary.map(d=>d.entN+d.exitN),1);
 
   // 당일 이탈 수 계산 (전일 top N → 오늘 top N 이탈)
@@ -918,16 +931,16 @@ function renderEntry(){
   + kpiRow([
       {cls:'kpi-coral',num:entrants.length,lbl:'신규진입'},
       {cls:'kpi-down',num:exitN,lbl:'당일 이탈'},
-      {cls:'kpi-teal',num:ENTRANT_TOP_N,lbl:'기준순위'},
+      {cls:'kpi-teal',num:ENTRANT_TOP_N||'전체',lbl:'기준순위'},
       {cls:'kpi-tot',num:totalEntN,lbl:'총진입'},
     ])
   + '<div class="toolbar"><div class="f-row">'
-  +   '<span class="f-label">기간</span>'+periodSelHtml('entPeriod','setPeriod(this.value)')
-  +   '<span class="f-label">기준</span><select class="sel" onchange="setEntrantN(this.value)">'+topNOpts+'</select>'
+  +   '<span class="f-label">기간</span>'+periodSelHtml('entPeriod','setEntryPeriod(this.value)',ENTRY_PERIOD)
+  +   '<span class="f-label">순위</span><select class="sel period-sel" onchange="setEntrantN(this.value)">'+topNOpts+'</select>'
   + '</div></div>'
 
   // 당일 신규 진입 테이블
-  + '<div class="sc"><div class="sc-title">상위 '+ENTRANT_TOP_N+'위 신규 진입 <span class="sub">'+esc(SEL_DATE)+(prevDate?' vs '+esc(prevDate):' · 이전 데이터 없음')+'</span></div>'
+  + '<div class="sc"><div class="sc-title">상위 '+(ENTRANT_TOP_N||'전체')+'위 신규 진입</div>'
   + (entrants.length===0
     ? '<div class="empty" style="padding:20px 0"><div class="msg">해당일 신규 진입 없음</div><div class="sub">다른 날짜를 선택하거나 기준 순위를 높여보세요</div></div>'
     : '<div class="tbl-wrap"><table>'
@@ -971,7 +984,8 @@ function setEntrantN(v){ ENTRANT_TOP_N=Number(v); renderEntry(); }
 // ════════════════════════════════════════════════
 // TAB 4 — TOP 10 분석
 // ════════════════════════════════════════════════
-let TOP10_PERIOD = 20; // 독립 기간 (1/5/10/20/50/100/200/0=전체)
+let TOP10_PERIOD = 5;  // 독립 기간 (1/5/10/20/50/100/200/0=전체)
+let TOP10_RANK = 30;   // 순위 기준 (10/20/30/0=전체)
 let TOP10_SORT = 'momentum'; // 정렬: momentum/days/inflow/avgrank
 
 const TOP10_PERIOD_OPTS = [
@@ -993,11 +1007,24 @@ function setTop10Sort(v){
   TOP10_SORT = v;
   renderTop10();
 }
+function setTop10Rank(v){
+  TOP10_RANK = Number(v);
+  renderTop10();
+}
 
 function top10PeriodSelHtml(){
   return '<select class="sel period-sel" onchange="setTop10Period(this.value)" aria-label="기간 선택">'
     + TOP10_PERIOD_OPTS.map(function(o){
         return '<option value="'+o.v+'"'+(TOP10_PERIOD===o.v?' selected':'')+'>'+o.l+'</option>';
+      }).join('')
+    + '</select>';
+}
+
+function top10RankSelHtml(){
+  const opts = [{v:10,l:'10위'},{v:20,l:'20위'},{v:30,l:'30위'},{v:0,l:'전체'}];
+  return '<select class="sel period-sel" onchange="setTop10Rank(this.value)" aria-label="순위 기준">'
+    + opts.map(function(o){
+        return '<option value="'+o.v+'"'+(TOP10_RANK===o.v?' selected':'')+'>'+o.l+'</option>';
       }).join('')
     + '</select>';
 }
@@ -1060,7 +1087,7 @@ function renderTop10(){
   const rows = VOLUMES.filter(function(r){
     return dateSet.has(r.date)
       && validRank(r.rank)
-      && r.rank <= 10
+      && (!TOP10_RANK || r.rank <= TOP10_RANK)
       && !isEtf(r.name, r.code)
       && !isPref(r.name, r.code);
   });
@@ -1224,6 +1251,7 @@ function renderTop10(){
     ])
   + '<div class="toolbar"><div class="f-row">'
   +   '<span class="f-label">기간</span>'+top10PeriodSelHtml()
+  +   '<span class="f-label">순위</span>'+top10RankSelHtml()
   +   '<span class="f-label">정렬</span>'
   +   '<select class="sel period-sel" onchange="setTop10Sort(this.value)" aria-label="정렬 기준">'
   +     Object.keys(sortLabels).map(function(k){
@@ -1392,7 +1420,7 @@ function renderTop10(){
 function renderHistory(){
   const panel = document.getElementById('panel-history');
   if(!VOLUMES.length){ panel.innerHTML = emptyPanel(); return; }
-  const periodRows = rowsInPeriod(PERIOD);
+  const periodRows = rowsInPeriod(HIST_PERIOD);
   const allStocks = [...new Set(periodRows.map(r=>r.name))].sort();
   if(!HIST_STOCK || !allStocks.includes(HIST_STOCK)) HIST_STOCK = allStocks[0]||'';
   const allHistRows = periodRows.filter(r=>r.name===HIST_STOCK).sort((a,b)=>a.date.localeCompare(b.date));
@@ -1405,7 +1433,7 @@ function renderHistory(){
   const avgRank = rankVals.length ? (rankVals.reduce((s,v)=>s+v,0)/rankVals.length).toFixed(1) : '-';
   const bestRank = rankVals.length ? Math.min(...rankVals) : '-';
   const worstRank = rankVals.length ? Math.max(...rankVals) : '-';
-  const totalDays = getPeriodDates(PERIOD).length;
+  const totalDays = getPeriodDates(HIST_PERIOD).length;
   const appearRate = totalDays>0 ? Math.round(histRows.length/totalDays*100) : 0;
   const amtVals = histRows.map(r=>r.amt).filter(a=>!safeN(a));
   const avgAmt = amtVals.length ? amtVals.reduce((s,v)=>s+v,0)/amtVals.length : null;
@@ -1421,7 +1449,7 @@ function renderHistory(){
       {cls:'kpi-amt',  num:fmtAmt(avgAmt),                          lbl:'평균대금'},
     ])
   + '<div class="toolbar"><div class="f-row">'
-  +   '<span class="f-label">기간</span>'+periodSelHtml('hisPeriod','setPeriod(this.value)')
+  +   '<span class="f-label">기간</span>'+periodSelHtml('hisPeriod','setHistPeriod(this.value)',HIST_PERIOD)
   +   '<span class="f-label">종목</span><select class="sel" onchange="setHistStock(this.value)">'+stockOpts+'</select>'
   + '</div></div>'
   + (histRows.length===0
@@ -1562,12 +1590,11 @@ function toast(msg){ const t=document.getElementById('toast'); if(!t) return; t.
 // ════════════════════════════════════════════════
 // 데모 폴백
 // ════════════════════════════════════════════════
-function loadDemo(reason){
+function loadDemo(reason, silent){
   IS_DEMO=true; VOLUMES=window.DEMO_VOLUMES.slice(); SEL_DATE='';
   renderCurrent();
   const lu=document.getElementById('lastUpdate'); if(lu){ lu.textContent='● 데모 데이터 (미연결)'; lu.style.color='rgba(255,214,150,.95)'; }
   const dot=document.getElementById('cfgDot'); if(dot) dot.classList.add('off');
-  toast('데모 데이터 표시 — '+(reason||'미리보기용'));
 }
 
 // ════════════════════════════════════════════════
@@ -1603,7 +1630,7 @@ else{ applyHeaderOffset(); window.addEventListener('resize',applyHeaderOffset); 
 // ── 초기 진입 ──
 (function init(){
   updateCfgStatus(undefined);
-  loadDemo('초기화');
+  loadDemo('초기화', true);  // silent: 초기 토스트 미표시
   loadData();
 })();
 </script>
