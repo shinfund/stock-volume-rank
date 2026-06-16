@@ -60,15 +60,16 @@ body{font-family:'Pretendard',-apple-system,sans-serif;font-size:15px;line-heigh
 /* ── KPI ── */
 .kpi-row{display:flex;gap:9px;margin-bottom:14px;padding-top:10px;flex-wrap:wrap;}
 .kpi-card{flex:1;min-width:76px;background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:11px 12px;text-align:center;box-shadow:var(--shadow);}
-.kpi-card .num{font-size:16px;font-weight:600;line-height:1.05;}
-.kpi-card .lbl{font-size:12.5px;margin-top:4px;font-weight:700;color:var(--txt2);}
-.kpi-up .num{color:var(--red);} .kpi-up .lbl{color:var(--red);}
-.kpi-down .num{color:var(--blue);} .kpi-down .lbl{color:var(--blue);}
-.kpi-tot .num{color:var(--sky600);} .kpi-tot .lbl{color:var(--sky600);}
-.kpi-amt .num{color:var(--purple);} .kpi-amt .lbl{color:var(--purple);}
-.kpi-teal .num{color:var(--teal600);} .kpi-teal .lbl{color:var(--teal600);}
-.kpi-coral .num{color:var(--coral);} .kpi-coral .lbl{color:var(--coral);}
-.kpi-amber .num{color:var(--amber);} .kpi-amber .lbl{color:var(--amber);}
+.kpi-card .num{font-size:13px;font-weight:700;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kpi-card .num-n{font-size:18px;font-weight:700;line-height:1.05;}
+.kpi-card .lbl{font-size:12.5px;margin-top:4px;font-weight:700;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.kpi-up .num,.kpi-up .num-n{color:var(--red);} .kpi-up .lbl{color:var(--red);}
+.kpi-down .num,.kpi-down .num-n{color:var(--blue);} .kpi-down .lbl{color:var(--blue);}
+.kpi-tot .num,.kpi-tot .num-n{color:var(--sky600);} .kpi-tot .lbl{color:var(--sky600);}
+.kpi-amt .num,.kpi-amt .num-n{color:var(--purple);} .kpi-amt .lbl{color:var(--purple);}
+.kpi-teal .num,.kpi-teal .num-n{color:var(--teal600);} .kpi-teal .lbl{color:var(--teal600);}
+.kpi-coral .num,.kpi-coral .num-n{color:var(--coral);} .kpi-coral .lbl{color:var(--coral);}
+.kpi-amber .num,.kpi-amber .num-n{color:var(--amber);} .kpi-amber .lbl{color:var(--amber);}
 
 /* ── TOOLBAR ── */
 .toolbar{background:var(--card);border:1px solid var(--border);border-radius:var(--r12);padding:11px 13px;margin-bottom:14px;box-shadow:var(--shadow);}
@@ -219,7 +220,7 @@ tbody tr:hover{background:var(--sky50);}
   .bar-row{grid-template-columns:80px 1fr 48px;}
   .bar-lbl{font-size:12px;}
   .kpi-card{min-width:66px;padding:9px 7px;}
-  .kpi-card .num{font-size:15px;}
+  .kpi-card .num-n{font-size:15px;}
   .kpi-card .lbl{font-size:12px;}
   .sel{min-height:40px;}
 }
@@ -233,7 +234,7 @@ tbody tr:hover{background:var(--sky50);}
   .f-label{font-size:11.5px;}
   .kpi-row{gap:6px;}
   .kpi-card{min-width:56px;padding:8px 5px;}
-  .kpi-card .num{font-size:14px;}
+  .kpi-card .num-n{font-size:14px;}
   .kpi-card .lbl{font-size:11px;margin-top:2px;}
   .tab-btn{font-size:12px;padding:10px 2px;}
   .sc{padding:11px;}
@@ -255,7 +256,7 @@ tbody tr:hover{background:var(--sky50);}
   .logo-title{font-size:18px;}
   .main{padding:0 20px 20px;}
   .kpi-card{padding:13px 16px;}
-  .kpi-card .num{font-size:18px;}
+  .kpi-card .num-n{font-size:18px;}
   .kpi-card .lbl{font-size:13px;}
   .sc{padding:18px;}
   .bar-row{grid-template-columns:150px 1fr 72px;}
@@ -270,7 +271,7 @@ tbody tr:hover{background:var(--sky50);}
 @media(min-width:1100px){
   .main{padding:0 0 24px;}
   .kpi-card{padding:14px 20px;}
-  .kpi-card .num{font-size:20px;}
+  .kpi-card .num-n{font-size:20px;}
 }
 </style>
 </head>
@@ -366,7 +367,7 @@ let CFG = (()=>{
 let VOLUMES = [];
 let IS_DEMO = false;
 let curTab = 'top10';
-let PERIOD = 5;        // 기간 (0=전체)
+let PERIOD = 50;       // 기간 (0=전체)
 let SEL_DATE = '';     // 일별/순위변동 탭 선택 날짜
 let ENTRANT_TOP_N = 10; // 상위권진입 기준 순위
 let HIST_STOCK = '';   // 종목이력 선택 종목
@@ -628,7 +629,16 @@ function distinctDatesDesc(rows){ return [...new Set(rows.map(r=>r.date).filter(
 // ════════════════════════════════════════════════
 // 기간 헬퍼
 // ════════════════════════════════════════════════
-const PERIOD_OPTS = [{v:5,l:'5일'},{v:10,l:'10일'},{v:20,l:'20일'},{v:60,l:'60일'},{v:120,l:'120일'},{v:240,l:'240일'},{v:0,l:'전체'}];
+const PERIOD_OPTS = [
+  {v:1,  l:'1일 · 당일 급등 포착'},
+  {v:5,  l:'5일 · 단기 모멘텀'},
+  {v:10, l:'10일 · 단기 수급'},
+  {v:20, l:'20일 · 스윙 기준'},
+  {v:50, l:'50일 · 중기 추세 ★'},
+  {v:100,l:'100일 · 섹터 흐름'},
+  {v:200,l:'200일 · 장기 수급'},
+  {v:0,  l:'전체 · 전체 이력'}
+];
 
 function getPeriodDates(period){
   const dates = distinctDatesDesc(VOLUMES);
@@ -650,7 +660,7 @@ function setPeriod(v){
   HIST_YEAR = ''; HIST_MONTH = ''; HIST_DAY = '';
   renderCurrent();
 }
-function pickerPeriod(){ return (curTab==='daily'||curTab==='change'||curTab==='entry') ? 0 : PERIOD; }
+function pickerPeriod(){ return (curTab==='daily'||curTab==='change') ? 0 : PERIOD; }
 function dateTripleSelHtml(){
   const dates = getPeriodDates(pickerPeriod());
   const sy = SEL_DATE ? SEL_DATE.slice(0,4) : '';
@@ -729,7 +739,7 @@ function renderDaily(){
 
   panel.innerHTML = ''
   + kpiRow([
-      {cls:'kpi-amt',num:fmtAmt(totalAmt),lbl:'총 거래대금'},
+      {cls:'kpi-amt',num:fmtAmt(totalAmt),lbl:'총 대금'},
       {cls:'kpi-up',num:upN,lbl:'상승'},
       {cls:'kpi-down',num:downN,lbl:'하락'},
       {cls:'kpi-'+(avgChg>=0?'up':'down'),num:fmtPct(avgChg),lbl:'평균등락'},
@@ -906,15 +916,14 @@ function renderEntry(){
 
   panel.innerHTML = ''
   + kpiRow([
-      {cls:'kpi-coral',num:entrants.length,lbl:'당일 신규진입'},
+      {cls:'kpi-coral',num:entrants.length,lbl:'신규진입'},
       {cls:'kpi-down',num:exitN,lbl:'당일 이탈'},
       {cls:'kpi-teal',num:ENTRANT_TOP_N,lbl:'기준순위'},
-      {cls:'kpi-tot',num:totalEntN,lbl:'기간 총진입'},
+      {cls:'kpi-tot',num:totalEntN,lbl:'총진입'},
     ])
   + '<div class="toolbar"><div class="f-row">'
   +   '<span class="f-label">기간</span>'+periodSelHtml('entPeriod','setPeriod(this.value)')
   +   '<span class="f-label">기준</span><select class="sel" onchange="setEntrantN(this.value)">'+topNOpts+'</select>'
-  +   '<span class="f-label">날짜</span>'+dateTripleSelHtml()
   + '</div></div>'
 
   // 당일 신규 진입 테이블
@@ -1404,12 +1413,12 @@ function renderHistory(){
 
   panel.innerHTML = ''
   + kpiRow([
-      {cls:'kpi-tot',num:histRows.length,lbl:'출현일수'},
-      {cls:'kpi-amber',num:appearRate+'%',lbl:'출현율'},
-      {cls:'kpi-teal',num:avgRank,lbl:'평균순위'},
-      {cls:'kpi-up',num:bestRank!=='-'?bestRank+'위':'-',lbl:'최고순위'},
-      {cls:'kpi-coral',num:worstRank!=='-'?worstRank+'위':'-',lbl:'최저순위'},
-      {cls:'kpi-amt',num:fmtAmt(avgAmt),lbl:'평균거래대금'},
+      {cls:'kpi-tot',  num:histRows.length,                          lbl:'출현일수'},
+      {cls:'kpi-amber',num:appearRate+'%',                           lbl:'출현율'},
+      {cls:'kpi-teal', num:avgRank,                                  lbl:'평균순위'},
+      {cls:'kpi-up',   num:bestRank!=='-'?bestRank+'위':'-',         lbl:'최고순위'},
+      {cls:'kpi-coral',num:worstRank!=='-'?worstRank+'위':'-',       lbl:'최저순위'},
+      {cls:'kpi-amt',  num:fmtAmt(avgAmt),                          lbl:'평균대금'},
     ])
   + '<div class="toolbar"><div class="f-row">'
   +   '<span class="f-label">기간</span>'+periodSelHtml('hisPeriod','setPeriod(this.value)')
@@ -1417,7 +1426,7 @@ function renderHistory(){
   + '</div></div>'
   + (histRows.length===0
     ? '<div class="empty"><div class="ico">📭</div><div class="msg">해당 기간 데이터 없음</div></div>'
-    : '<div class="sc"><div class="sc-title">'+esc(HIST_STOCK)+' 순위 추이 <span class="sub">낮을수록 상위권</span></div>'
+    : '<div class="sc"><div class="sc-title"><span style="color:var(--sky600)">'+esc(HIST_STOCK)+'</span> <span class="sub">순위 추이 · 낮을수록 상위권</span></div>'
     +   '<div class="trend-wrap">'+rankTrendSvg(histRows)+'</div>'
     + '</div>'
     + '<div class="sc"><div class="sc-title">일별 상세</div>'
@@ -1448,7 +1457,7 @@ function rankTrendSvg(rows){
   if(!validRanks.length) return '';
   const N = dates.length;
   const W = Math.max(N*52, 320), H = 180;
-  const padL=32, padR=14, padT=14, padB=32;
+  const padL=32, padR=14, padT=26, padB=32;
   const iw=W-padL-padR, ih=H-padT-padB;
   const minR=Math.min(...validRanks), maxR=Math.max(...validRanks);
   const rng = Math.max(maxR-minR, 1);
@@ -1488,7 +1497,11 @@ function rankTrendSvg(rows){
 // 공통 헬퍼
 // ════════════════════════════════════════════════
 function kpiRow(items){
-  return '<div class="kpi-row">'+items.map(i=>'<div class="kpi-card '+i.cls+'"><div class="num">'+i.num+'</div><div class="lbl">'+i.lbl+'</div></div>').join('')+'</div>';
+  return '<div class="kpi-row">'+items.map(function(i){
+    const isNum = (typeof i.num === 'number') || (typeof i.num === 'string' && /^[+\-]?[\d,\.조억만%위]+$/.test(String(i.num).trim()));
+    const nc = isNum ? 'num-n' : 'num';
+    return '<div class="kpi-card '+i.cls+'"><div class="'+nc+'">'+i.num+'</div><div class="lbl">'+i.lbl+'</div></div>';
+  }).join('')+'</div>';
 }
 function emptyPanel(){
   if(!CFG.workerUrl) return '<div class="empty"><div class="ico">🔌</div><div class="msg">Notion DB가 연결되지 않았습니다</div><div class="sub">우측 상단 <b>설정</b>에서 Worker URL을 입력하세요</div></div>';
