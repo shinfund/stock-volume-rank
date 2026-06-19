@@ -571,9 +571,10 @@ async function fetchNotion(dbId, body, timeout){
     return await res.json();
   }finally{ clearTimeout(timer); }
 }
-async function fetchAllPages(dbId, sorts){
+async function fetchAllPages(dbId, sorts, filter){
   const body = {page_size:100};
   if(sorts) body.sorts = sorts;
+  if(filter) body.filter = filter;
   const data = await fetchNotion(dbId, body);
   // Worker가 응답을 중첩 래핑하는 경우 대응
   function unwrap(d){ return (d && d.results) ? d : (d && d.data && d.data.results) ? d.data : {}; }
@@ -602,6 +603,23 @@ async function fetchAllPages(dbId, sorts){
     if(!got.length) break;
   }
   return pages;
+}
+async function loadAllYears(dbId, sorts){
+  const now=new Date();
+  let yr=now.getFullYear(), mo=now.getMonth()+1;
+  let allPages=[], empty=0;
+  while(empty<3 && yr>=now.getFullYear()-2){
+    const ms=String(mo).padStart(2,'0');
+    const ny=mo===12?yr+1:yr, nm=mo===12?1:mo+1;
+    const nd=`${ny}-${String(nm).padStart(2,'0')}-01`;
+    const filter={and:[{property:'날짜',date:{on_or_after:`${yr}-${ms}-01`}},{property:'날짜',date:{before:nd}}]};
+    const lab=document.getElementById('syncLabel');
+    if(lab) lab.textContent=`로딩… ${yr}-${ms}`;
+    const chunk=await fetchAllPages(dbId,sorts,filter);
+    if(chunk.length){empty=0;allPages=allPages.concat(chunk);}else{empty++;}
+    mo--; if(mo===0){mo=12;yr--;}
+  }
+  return allPages;
 }
 function getVal(p){
   if(!p) return '';
@@ -1620,7 +1638,7 @@ async function loadData(){
   const btn=document.getElementById('syncBtn'), ico=document.getElementById('syncIcon'), lab=document.getElementById('syncLabel');
   if(btn) btn.disabled=true; if(ico) ico.classList.add('spinning'); if(lab) lab.textContent='로딩…';
   try{
-    const pages = await fetchAllPages(CFG.volumeDbId, [{property:'날짜',direction:'descending'},{property:'순위',direction:'ascending'},{timestamp:'created_time',direction:'ascending'}]);
+    const pages = await loadAllYears(CFG.volumeDbId, [{property:'날짜',direction:'descending'},{property:'순위',direction:'ascending'}]);
     const parsed = parseVolumes(pages);
     if(!parsed.length) throw new Error('데이터 없음');
     IS_DEMO=false; VOLUMES=parsed; SEL_DATE='';
